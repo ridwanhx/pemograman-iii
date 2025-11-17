@@ -1,0 +1,17 @@
+{
+  "first_name": "Muhammad",
+  "last_name": "Ridwan",
+  "height": 164,
+  "weight": 67.4,
+  "gender": "Male",
+  "email": "ridwan@mail.com",
+  "phone_number": "081563833701",
+  "hobbies": ["Coding", "Streaming Movie", "Learning"],
+  "programming_skills": {
+    "PHP": ["Laravel", "CodeIgniter"],
+    "JavaScript": ["AlpineJS"],
+    "Go": ["Fiber"],
+    "Dart": ["Flutter"]
+  },
+  "tools": ["Visual Studio Code", "Laragon", "Postman"]
+}
