@@ -16,4 +16,14 @@ func SetupRoutes(app *fiber.App) {
 	// Menambahkan endpoint GET /api/movies untuk mengambil seluruh data movies
 	api.Get("/movies", handler.GetAllMovie);
 	api.Post("/movies", handler.InsertMovie);
+
+	// Menambahkan endpoint GET /api/mahasiswa untuk mengambil seluruh data mahasiswa
+	api.Get("/mahasiswa", handler.GetAllMahasiswa);
+	api.Get("/mahasiswa/:npm", handler.GetMahasiswaByNpm);
+	
+	api.Post("/mahasiswa", handler.InsertMahasiswa);
+
+	api.Patch("/mahasiswa/:npm", handler.UpdateMahasiswaByNpm)
+
+	api.Delete("/mahasiswa/:id", handler.DeleteMahasiswaById)
 }

@@ -17,7 +17,7 @@ func main() {
 	config.InitDB();
 
 	// (3) get data movies
-	config.DB.AutoMigrate(&model.Movies{});
+	config.DB.AutoMigrate(&model.Movies{}, &model.Mahasiswa{})
 
 	// (4) Logging request
 	app.Use(logger.New());
