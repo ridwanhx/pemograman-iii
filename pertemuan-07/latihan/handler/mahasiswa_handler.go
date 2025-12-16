@@ -97,6 +97,7 @@ func DeleteMahasiswaById(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	
 	return c.JSON(fiber.Map{
 		"message": "Data mahasiswa berhasil dihapus",
 	})

@@ -17,7 +17,10 @@ func main() {
 	config.InitDB();
 
 	// (3) get data movies
-	config.DB.AutoMigrate(&model.Movies{}, &model.Mahasiswa{})
+	config.DB.AutoMigrate(&model.Mahasiswa{})
+
+	// Setup CORS
+	config.SetupCORS(app)
 
 	// (4) Logging request
 	app.Use(logger.New());
