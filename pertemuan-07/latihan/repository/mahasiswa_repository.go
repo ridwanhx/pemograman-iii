@@ -33,3 +33,10 @@ func DeleteMahasiswaById(id string) error {
 
 	return result.Error
 }
+
+// Tambahkan/Pastikan fungsi ini ada di mahasiswa_repository.go
+func DeleteMahasiswaByNpm(npm string) error {
+    // Gunakan Where("npm = ?", ...) agar mencari berdasarkan kolom NPM, bukan ID
+    result := config.DB.Where("npm = ?", npm).Delete(&model.Mahasiswa{})
+    return result.Error
+}

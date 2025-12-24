@@ -23,7 +23,10 @@ func SetupRoutes(app *fiber.App) {
 	
 	api.Post("/mahasiswa", handler.InsertMahasiswa);
 
+	api.Put("/mahasiswa/:npm", handler.UpdateMahasiswaByNpm)
+
 	api.Patch("/mahasiswa/:npm", handler.UpdateMahasiswaByNpm)
 
-	api.Delete("/mahasiswa/:id", handler.DeleteMahasiswaById)
+	// api.Delete("/mahasiswa/:id", handler.DeleteMahasiswaById)
+	api.Delete("/mahasiswa/:npm", handler.DeleteMahasiswaByNpm)
 }

@@ -4,6 +4,10 @@ import (
 	"latihan/model"
 	"latihan/repository"
 
+	"strings" // Tambahkan ini
+
+	"github.com/lib/pq" // Tambahkan ini
+
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -71,34 +75,74 @@ func UpdateMahasiswaByNpm(c *fiber.Ctx) error {
 	if err := c.BodyParser(&updateData); err != nil {
 		return c.Status(400).JSON(fiber.Map{
 			"message": "Format data salah",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 	}
+
+	// PERBAIKAN DI SINI:
+	// Paksa kolom hobi menjadi tipe pq.StringArray agar tidak dianggap 'record' oleh Postgres
+	if hobiRaw, ok := updateData["hobi"]; ok {
+		if hobiSlice, ok := hobiRaw.([]interface{}); ok {
+			strSlice := make([]string, len(hobiSlice))
+			for i, v := range hobiSlice {
+				strSlice[i] = v.(string)
+			}
+			updateData["hobi"] = pq.StringArray(strSlice)
+		} else if hobiStr, ok := hobiRaw.(string); ok {
+            // Jika dikirim sebagai string (tanpa parseHobi), tetap kita tangani
+			parts := strings.Split(hobiStr, ",")
+			for i := range parts {
+				parts[i] = strings.TrimSpace(parts[i])
+			}
+			updateData["hobi"] = pq.StringArray(parts)
+		}
+	}
+
+	// Keamanan: Hapus NPM agar tidak mencoba mengubah Primary Key
+	delete(updateData, "npm")
+	delete(updateData, "id")
 
 	if err := repository.UpdateMahasiswaByNpm(npm, updateData); err != nil {
 		return c.Status(500).JSON(fiber.Map{
 			"message": "Gagal update data mahasiswa",
-			"error": err.Error(),
+			"error":   err.Error(),
 		})
 	}
 
 	return c.JSON(fiber.Map{
 		"message": "Data mahasiswa berhasil diubah.",
-		"data": updateData,
+		"data":    updateData,
 	})
 }
 
-func DeleteMahasiswaById(c *fiber.Ctx) error {
-	id := c.Params("id")
+// func DeleteMahasiswaById(c *fiber.Ctx) error {
+// 	id := c.Params("id")
 
-	if err := repository.DeleteMahasiswaById(id); err != nil {
-		return c.Status(500).JSON(fiber.Map{
-			"message": "Gagal menghapus data mahasiswa",
-			"error": err.Error(),
-		})
-	}
+// 	if err := repository.DeleteMahasiswaById(id); err != nil {
+// 		return c.Status(500).JSON(fiber.Map{
+// 			"message": "Gagal menghapus data mahasiswa",
+// 			"error": err.Error(),
+// 		})
+// 	}
 	
-	return c.JSON(fiber.Map{
-		"message": "Data mahasiswa berhasil dihapus",
-	})
+// 	return c.JSON(fiber.Map{
+// 		"message": "Data mahasiswa berhasil dihapus",
+// 	})
+// }
+
+// Tambahkan fungsi ini di mahasiswa_handler.go
+func DeleteMahasiswaByNpm(c *fiber.Ctx) error {
+    // Ambil parameter npm dari URL
+    npm := c.Params("npm")
+
+    if err := repository.DeleteMahasiswaByNpm(npm); err != nil {
+        return c.Status(500).JSON(fiber.Map{
+            "message": "Gagal menghapus data mahasiswa",
+            "error":   err.Error(),
+        })
+    }
+    
+    return c.JSON(fiber.Map{
+        "message": "Data mahasiswa dengan NPM " + npm + " berhasil dihapus",
+    })
 }
