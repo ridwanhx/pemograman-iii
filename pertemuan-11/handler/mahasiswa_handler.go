@@ -1,0 +1,130 @@
+package handler
+
+import (
+    "pertemuan-11/model"
+    "pertemuan-11/repository"
+    "strings"
+
+    "github.com/lib/pq"
+    "github.com/gofiber/fiber/v2"
+)
+
+// Ambil semua data mahasiswa
+func GetAllMahasiswa(c *fiber.Ctx) error {
+    data, err := repository.GetAllMahasiswa()
+    if err != nil {
+        return c.Status(500).JSON(fiber.Map{
+            "message": "Gagal mengambil data mahasiswa",
+            "error":   err.Error(),
+        })
+    }
+
+    return c.JSON(fiber.Map{
+        "message": "Berhasil mengambil data mahasiswa",
+        "data":    data,
+    })
+}
+
+// Tambah data mahasiswa baru
+func CreateMahasiswa(c *fiber.Ctx) error {
+    var mahasiswa model.Mahasiswa
+
+    if err := c.BodyParser(&mahasiswa); err != nil {
+        return c.Status(400).JSON(fiber.Map{
+            "message": "Format data salah",
+            "error":   err.Error(),
+        })
+    }
+
+    if err := repository.InsertMahasiswa(mahasiswa); err != nil {
+        return c.Status(500).JSON(fiber.Map{
+            "message": "Gagal menambahkan data baru",
+            "error":   err.Error(),
+        })
+    }
+
+    return c.Status(201).JSON(fiber.Map{
+        "message": "Data mahasiswa berhasil ditambahkan",
+        "data":    mahasiswa,
+    })
+}
+
+// Ambil data mahasiswa berdasarkan NPM
+func GetMahasiswaByNpm(c *fiber.Ctx) error {
+    npm := c.Params("npm")
+
+    data, err := repository.GetMahasiswaByNpm(npm)
+    if err != nil {
+        return c.Status(404).JSON(fiber.Map{
+            "message": "Mahasiswa dengan NPM tersebut tidak ditemukan",
+            "error":   err.Error(),
+        })
+    }
+
+    return c.JSON(fiber.Map{
+        "message": "Berhasil mengambil data mahasiswa berdasarkan NPM",
+        "data":    data,
+    })
+}
+
+// Update data mahasiswa berdasarkan NPM
+func UpdateMahasiswaByNpm(c *fiber.Ctx) error {
+    npm := c.Params("npm")
+    var updateData map[string]interface{}
+
+    if err := c.BodyParser(&updateData); err != nil {
+        return c.Status(400).JSON(fiber.Map{
+            "message": "Format data salah",
+            "error":   err.Error(),
+        })
+    }
+
+    // Pastikan kolom hobi tersimpan sebagai pq.StringArray
+    if hobiRaw, ok := updateData["hobi"]; ok {
+        if hobiSlice, ok := hobiRaw.([]interface{}); ok {
+            strSlice := make([]string, len(hobiSlice))
+            for i, v := range hobiSlice {
+                strSlice[i] = v.(string)
+            }
+            updateData["hobi"] = pq.StringArray(strSlice)
+        } else if hobiStr, ok := hobiRaw.(string); ok {
+            parts := strings.Split(hobiStr, ",")
+            for i := range parts {
+                parts[i] = strings.TrimSpace(parts[i])
+            }
+            updateData["hobi"] = pq.StringArray(parts)
+        }
+    }
+
+    // Jangan izinkan update primary key
+    delete(updateData, "npm")
+    delete(updateData, "id")
+
+    if err := repository.UpdateMahasiswaByNpm(npm, updateData); err != nil {
+        return c.Status(500).JSON(fiber.Map{
+            "message": "Gagal update data mahasiswa",
+            "error":   err.Error(),
+        })
+    }
+
+    return c.JSON(fiber.Map{
+        "message": "Data mahasiswa berhasil diubah",
+        "data":    updateData,
+    })
+}
+
+// Hapus data mahasiswa berdasarkan NPM
+func DeleteMahasiswaByNpm(c *fiber.Ctx) error {
+    npm := c.Params("npm")
+
+    if err := repository.DeleteMahasiswaByNpm(npm); err != nil {
+        return c.Status(500).JSON(fiber.Map{
+            "message": "Gagal menghapus data mahasiswa",
+            "error":   err.Error(),
+        })
+    }
+
+    return c.JSON(fiber.Map{
+        "message": "Data mahasiswa dengan NPM " + npm + " berhasil dihapus",
+    })
+}

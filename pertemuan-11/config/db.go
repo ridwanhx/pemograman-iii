@@ -32,3 +32,6 @@ func ConnectDB() {
     log.Println("Berhasil terhubung ke Supabase & Migrasi Tabel Selesai")
     DB = db
 }
+
+// Getter supaya repository bisa ambil DB 
+func GetDB() *gorm.DB { return DB }
